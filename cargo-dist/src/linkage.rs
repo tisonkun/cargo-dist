@@ -224,10 +224,35 @@ impl Linkage {
             frameworks: other.frameworks.iter().map(Library::from_schema).collect(),
         }
     }
+
+    /// Returns a flat list of packages that come from the specific package manager
+    pub fn packages_from(&self, package_manager: PackageManager) -> Vec<String> {
+        let mut packages = vec![];
+        packages.extend(
+            self.system
+                .iter()
+                .filter(|l| l.package_manager == Some(package_manager))
+                .filter_map(|l| l.source.clone()),
+        );
+        packages.extend(
+            self.homebrew
+                .iter()
+                .filter(|l| l.package_manager == Some(package_manager))
+                .filter_map(|l| l.source.clone()),
+        );
+        packages.extend(
+            self.other
+                .iter()
+                .filter(|l| l.package_manager == Some(package_manager))
+                .filter_map(|l| l.source.clone()),
+        );
+
+        packages
+    }
 }
 
 /// Represents the package manager a library was installed by
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Deserialize, Serialize)]
 pub enum PackageManager {
     /// Homebrew (usually for Mac)
     Homebrew,
